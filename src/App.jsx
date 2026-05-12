@@ -27,7 +27,22 @@ const useScrollReveal = () => {
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
-  return [ref, visible];
+  return [ref, visible]; 
+};
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(window.innerWidth < breakpoint);
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => window.removeEventListener("resize", onResize);
+  }, [breakpoint]);
+
+  return isMobile;
 };
 
 const RevealBlock = ({ children, delay = 0, className = "" }) => {
@@ -182,6 +197,7 @@ const WHAT_WE_EVALUATE = [
 export default function App() {
   const [heroRef, heroOffset] = useParallax(0.4);
   const [scrolled, setScrolled] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
@@ -196,7 +212,7 @@ export default function App() {
       {/* NAV */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "1rem 2.5rem",
+        padding: isMobile ? "1rem 1rem" : "1rem 2.5rem",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         background: scrolled ? "rgba(250,247,244,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
@@ -258,7 +274,7 @@ export default function App() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ textAlign: "center", position: "relative", zIndex: 2, padding: "0 1.5rem", maxWidth: "760px" }}>
+        <div style={{ textAlign: "center", position: "relative", zIndex: 2, padding: isMobile ? "0 1rem" : "0 1.5rem", maxWidth: "760px" }}>
           <p style={{
             fontFamily: "'DM Sans', sans-serif", fontWeight: 300,
             fontSize: "0.75rem", letterSpacing: "0.22em",
@@ -336,7 +352,14 @@ export default function App() {
       {/* WHAT IS IT */}
       <section style={{ padding: "7rem 2rem", maxWidth: "1100px", margin: "0 auto" }}>
         <RevealBlock>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem", alignItems: "center" }}>
+        <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: isMobile ? "3rem" : "5rem",
+    alignItems: "center",
+  }}
+>
             <div>
               <p style={{ fontFamily: "'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1.5rem" }}>La especialidad</p>
               <h2 style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, lineHeight: 1.15, marginBottom: "2rem", color: "#2C1810" }}>
@@ -450,7 +473,13 @@ export default function App() {
         </div>
 
         {/* What we evaluate + key messages */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
+        <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: isMobile ? "2rem" : "3rem",
+    alignItems: "start",
+  }}>
           <RevealBlock>
             <div style={{
               padding: "2.5rem",
@@ -516,7 +545,12 @@ export default function App() {
               </h2>
             </div>
           </RevealBlock>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem" }}>
+          <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: "2.5rem",
+  }}>
             <RevealBlock>
               <div style={{
                 padding: "2.5rem",
