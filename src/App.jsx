@@ -195,30 +195,22 @@ const WHAT_WE_EVALUATE = [
 ];
 
 
-// Mapa con iframe de OpenStreetMap — siempre carga las calles correctamente
-const LeafletMap = () => {
-  // Coordenadas del Sanatorio Austral, Álvaro Barros 386, Viedma
-  const lat = -40.8131;
-  const lng = -62.9972;
-  const zoom = 16;
-
-  // URL del iframe embed de OpenStreetMap con marcador
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.008}%2C${lat - 0.005}%2C${lng + 0.008}%2C${lat + 0.005}&layer=mapnik&marker=${lat}%2C${lng}`;
-
-  return (
-    <div style={{ width: "100%", height: "340px", position: "relative", filter: "saturate(0.80) sepia(0.10)" }}>
-      <iframe
-        src={src}
-        title="Ubicación Sanatorio Austral"
-        width="100%"
-        height="100%"
-        style={{ border: "none", display: "block" }}
-        loading="lazy"
-        allowFullScreen
-      />
-    </div>
-  );
-};
+// Mapa estático — imagen de Google Maps con pin rojo en la ubicación exacta
+const LeafletMap = () => (
+  <div style={{ width: "100%", height: "340px", overflow: "hidden", position: "relative" }}>
+    <img
+      src="./mapa_viedma.png"
+      alt="Mapa de ubicación — Álvaro Barros 386, Viedma"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        objectPosition: "center top",
+        display: "block",
+      }}
+    />
+  </div>
+);
 
 export default function App() {
   const [heroRef, heroOffset] = useParallax(0.4);
