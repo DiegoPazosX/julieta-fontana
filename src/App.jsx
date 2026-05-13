@@ -195,76 +195,28 @@ const WHAT_WE_EVALUATE = [
 ];
 
 
-// Leaflet map: carga CSS+JS dinamicamente, sin iframe ni API key
+// Mapa con iframe de OpenStreetMap — siempre carga las calles correctamente
 const LeafletMap = () => {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
+  // Coordenadas del Sanatorio Austral, Álvaro Barros 386, Viedma
+  const lat = -40.8131;
+  const lng = -62.9972;
+  const zoom = 16;
 
-  useEffect(() => {
-    if (mapInstanceRef.current) return;
-
-    if (!document.getElementById("leaflet-css")) {
-      const link = document.createElement("link");
-      link.id = "leaflet-css";
-      link.rel = "stylesheet";
-      link.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
-      document.head.appendChild(link);
-    }
-
-    const initMap = () => {
-      if (!mapRef.current || !window.L) return;
-      const L = window.L;
-      const lat = -40.8135, lng = -62.9986;
-      const map = L.map(mapRef.current, {
-        center: [lat, lng],
-        zoom: 16,
-        zoomControl: true,
-        scrollWheelZoom: false,
-        attributionControl: true,
-      });
-      mapInstanceRef.current = map;
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-        maxZoom: 19,
-      }).addTo(map);
-
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="width:32px;height:32px;background:#6B3A2A;border:3px solid #FAF7F4;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 4px 12px rgba(44,24,16,0.4)"><div style="width:9px;height:9px;background:#FAF7F4;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -36],
-      });
-
-      L.marker([lat, lng], { icon })
-        .addTo(map)
-        .bindPopup("<b style='font-family:DM Sans,sans-serif;color:#2C1810'>Sanatorio Austral</b><br><span style='font-size:0.8rem;color:#6B3A2A'>Alvaro Barros 386, Anexo 1</span>")
-        .openPopup();
-    };
-
-    if (window.L) {
-      initMap();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
-      script.onload = initMap;
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, []);
+  // URL del iframe embed de OpenStreetMap con marcador
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.008}%2C${lat - 0.005}%2C${lng + 0.008}%2C${lat + 0.005}&layer=mapnik&marker=${lat}%2C${lng}`;
 
   return (
-    <div
-      ref={mapRef}
-      style={{ width: "100%", height: "340px", filter: "saturate(0.75) sepia(0.12)" }}
-    />
+    <div style={{ width: "100%", height: "340px", position: "relative", filter: "saturate(0.80) sepia(0.10)" }}>
+      <iframe
+        src={src}
+        title="Ubicación Sanatorio Austral"
+        width="100%"
+        height="100%"
+        style={{ border: "none", display: "block" }}
+        loading="lazy"
+        allowFullScreen
+      />
+    </div>
   );
 };
 
