@@ -194,6 +194,80 @@ const WHAT_WE_EVALUATE = [
   "Fuerza y coordinación del suelo pélvico",
 ];
 
+
+// Leaflet map: carga CSS+JS dinamicamente, sin iframe ni API key
+const LeafletMap = () => {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    if (mapInstanceRef.current) return;
+
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+      document.head.appendChild(link);
+    }
+
+    const initMap = () => {
+      if (!mapRef.current || !window.L) return;
+      const L = window.L;
+      const lat = -40.8135, lng = -62.9986;
+      const map = L.map(mapRef.current, {
+        center: [lat, lng],
+        zoom: 16,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        attributionControl: true,
+      });
+      mapInstanceRef.current = map;
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+        maxZoom: 19,
+      }).addTo(map);
+
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="width:32px;height:32px;background:#6B3A2A;border:3px solid #FAF7F4;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 4px 12px rgba(44,24,16,0.4)"><div style="width:9px;height:9px;background:#FAF7F4;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div></div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -36],
+      });
+
+      L.marker([lat, lng], { icon })
+        .addTo(map)
+        .bindPopup("<b style='font-family:DM Sans,sans-serif;color:#2C1810'>Sanatorio Austral</b><br><span style='font-size:0.8rem;color:#6B3A2A'>Alvaro Barros 386, Anexo 1</span>")
+        .openPopup();
+    };
+
+    if (window.L) {
+      initMap();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+      script.onload = initMap;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ width: "100%", height: "340px", filter: "saturate(0.75) sepia(0.12)" }}
+    />
+  );
+};
+
 export default function App() {
   const [heroRef, heroOffset] = useParallax(0.4);
   const [scrolled, setScrolled] = useState(false);
@@ -625,8 +699,109 @@ export default function App() {
         </RevealBlock>
       </section>
 
-      {/* WAVE: cream → dark before CTA */}
+      {/* WAVE: cream → peach before location */}
       <div style={{ lineHeight: 0, background: "#FAF7F4", marginBottom: "-2px" }}>
+        <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
+          <polygon points="0,0 1440,60 1440,60 0,60" fill="#F2E8E0" />
+        </svg>
+      </div>
+
+      {/* LOCATION */}
+      <section style={{ background: "#F2E8E0", padding: "5rem 2rem 6rem", position: "relative", overflow: "hidden" }}>
+        {/* subtle decorative blob */}
+        <div style={{
+          position: "absolute", top: "-80px", right: "-80px",
+          width: "400px", height: "400px", borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(196,144,106,0.1) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <RevealBlock>
+            <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1rem" }}>Dónde encontrarme</p>
+              <h2 style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, lineHeight: 1.15, color: "#2C1810" }}>
+                Ubicación
+              </h2>
+            </div>
+          </RevealBlock>
+
+          <RevealBlock delay={100}>
+            <div style={{
+              borderRadius: "24px",
+              overflow: "hidden",
+              border: "1px solid rgba(107,58,42,0.15)",
+              boxShadow: "0 8px 40px rgba(44,24,16,0.08)",
+              background: "#FAF7F4",
+            }}>
+              {/* Map – Leaflet renderizado en React, sin iframe ni API key */}
+              <LeafletMap />
+
+              {/* Address bar */}
+              <div style={{
+                padding: isMobile ? "1.6rem 1.5rem" : "2rem 2.5rem",
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: isMobile ? "flex-start" : "center",
+                justifyContent: "space-between",
+                gap: "1.2rem",
+              }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+                  {/* pin icon */}
+                  <div style={{
+                    width: "40px", height: "40px", flexShrink: 0,
+                    borderRadius: "50%",
+                    background: "rgba(139,74,50,0.1)",
+                    border: "1px solid rgba(139,74,50,0.2)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    marginTop: "2px",
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B4A32" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+                      <circle cx="12" cy="9" r="2.5"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:500, fontSize:"0.92rem", color:"#2C1810", marginBottom:"0.25rem", lineHeight:1.3 }}>
+                      Álvaro Barros 386, Anexo 1
+                    </p>
+                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.82rem", color:"#9B5E42", lineHeight:1.5, letterSpacing:"0.02em" }}>
+                      Sanatorio Austral · Viedma, Río Negro
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=Alvaro+Barros+386,+Viedma,+R%C3%ADo+Negro,+Argentina"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontFamily:"'DM Sans',sans-serif", fontWeight:500, fontSize:"0.8rem",
+                    letterSpacing:"0.1em", textTransform:"uppercase",
+                    color:"#FAF7F4", textDecoration:"none",
+                    padding:"0.75rem 1.8rem",
+                    background:"#6B3A2A",
+                    borderRadius:"100px",
+                    whiteSpace:"nowrap",
+                    transition:"all 0.3s ease",
+                    display:"inline-flex", alignItems:"center", gap:"0.5rem",
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background="#8B4A32"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(107,58,42,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background="#6B3A2A"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                  </svg>
+                  Cómo llegar
+                </a>
+              </div>
+            </div>
+          </RevealBlock>
+        </div>
+      </section>
+
+      {/* WAVE: peach → dark before CTA */}
+      <div style={{ lineHeight: 0, background: "#F2E8E0", marginBottom: "-2px" }}>
         <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
           <path d="M0,20 C300,80 600,0 900,50 C1100,85 1300,15 1440,35 L1440,80 L0,80 Z" fill="#2C1810" />
         </svg>
