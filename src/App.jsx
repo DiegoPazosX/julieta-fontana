@@ -136,25 +136,43 @@ const DisorderCard = ({ d, delay }) => {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          padding: "1.8rem",
+          padding: "2rem 1.5rem",
           border: `1px solid ${hovered ? colors.border : "rgba(196,144,106,0.18)"}`,
-          borderRadius: "16px",
+          borderRadius: "20px",
           background: hovered ? colors.bg : "rgba(255,255,255,0.04)",
           transform: hovered ? "scale(1.055) translateY(-4px)" : "scale(1) translateY(0)",
           transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
           cursor: "default",
           boxShadow: hovered ? `0 12px 32px rgba(0,0,0,0.25)` : "none",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          gap: "1rem",
         }}
       >
         <div style={{
-          marginBottom: "1.2rem",
+          width: "56px", height: "56px",
+          borderRadius: "50%",
+          background: hovered ? colors.bg : "rgba(255,255,255,0.06)",
+          border: `1px solid ${hovered ? colors.border : "rgba(196,144,106,0.15)"}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
           transform: hovered ? "scale(1.15)" : "scale(1)",
-          transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
-          display: "inline-block",
+          transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+          flexShrink: 0,
         }}>
           <DisorderIcon type={d.icon} />
         </div>
-        <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.95rem", lineHeight:1.6, color:"#E8D5C8" }}>{d.text}</p>
+        <p style={{
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontWeight: 400,
+          fontStyle: "italic",
+          fontSize: "1.05rem",
+          lineHeight: 1.5,
+          color: "#E8D5C8",
+          letterSpacing: "0.01em",
+          margin: 0,
+        }}>{d.text}</p>
       </div>
     </RevealBlock>
   );
