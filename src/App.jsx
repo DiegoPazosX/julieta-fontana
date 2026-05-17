@@ -346,7 +346,10 @@ export default function App() {
 
       {/* WHAT IS IT */}
       <section style={{ padding: "7rem 2rem", maxWidth: "1100px", margin: "0 auto" }}>
-
+        <RevealBlock>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? "3rem" : "5rem", alignItems: "center" }}>
+            <div>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1.5rem" }}>La especialidad</p>
               <h2 style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, lineHeight: 1.15, marginBottom: "2rem", color: "#2C1810" }}>
                 ¿Qué es la kinesiología<br /><em style={{ color: "#8B4A32" }}>pelviperineal?</em>
               </h2>
