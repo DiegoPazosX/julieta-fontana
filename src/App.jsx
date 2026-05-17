@@ -508,7 +508,7 @@ export default function App() {
         </div>
 
         {/* What we evaluate + key messages */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? "1.5rem" : "3rem", alignItems: "start" }}>
           <RevealBlock>
             <div style={{
               padding: "2.5rem",
@@ -574,7 +574,7 @@ export default function App() {
               </h2>
             </div>
           </RevealBlock>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "2.5rem" }}>
             <RevealBlock>
               <div style={{
                 padding: "2.5rem",
