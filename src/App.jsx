@@ -27,21 +27,16 @@ const useScrollReveal = () => {
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
-  return [ref, visible]; 
+  return [ref, visible];
 };
-const useIsMobile = (breakpoint = 768) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
-    const onResize = () => {
-      setIsMobile(window.innerWidth < breakpoint);
-    };
-
-    window.addEventListener("resize", onResize);
-
-    return () => window.removeEventListener("resize", onResize);
-  }, [breakpoint]);
-
+    const fn = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
   return isMobile;
 };
 
@@ -136,43 +131,25 @@ const DisorderCard = ({ d, delay }) => {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          padding: "2rem 1.5rem",
+          padding: "1.8rem",
           border: `1px solid ${hovered ? colors.border : "rgba(196,144,106,0.18)"}`,
-          borderRadius: "20px",
+          borderRadius: "16px",
           background: hovered ? colors.bg : "rgba(255,255,255,0.04)",
           transform: hovered ? "scale(1.055) translateY(-4px)" : "scale(1) translateY(0)",
           transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
           cursor: "default",
           boxShadow: hovered ? `0 12px 32px rgba(0,0,0,0.25)` : "none",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-          gap: "1rem",
         }}
       >
         <div style={{
-          width: "56px", height: "56px",
-          borderRadius: "50%",
-          background: hovered ? colors.bg : "rgba(255,255,255,0.06)",
-          border: `1px solid ${hovered ? colors.border : "rgba(196,144,106,0.15)"}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
+          marginBottom: "1.2rem",
           transform: hovered ? "scale(1.15)" : "scale(1)",
-          transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
-          flexShrink: 0,
+          transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+          display: "inline-block",
         }}>
           <DisorderIcon type={d.icon} />
         </div>
-        <p style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontWeight: 400,
-          fontStyle: "italic",
-          fontSize: "1.05rem",
-          lineHeight: 1.5,
-          color: "#E8D5C8",
-          letterSpacing: "0.01em",
-          margin: 0,
-        }}>{d.text}</p>
+        <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.95rem", lineHeight:1.6, color:"#E8D5C8" }}>{d.text}</p>
       </div>
     </RevealBlock>
   );
@@ -212,24 +189,6 @@ const WHAT_WE_EVALUATE = [
   "Fuerza y coordinación del suelo pélvico",
 ];
 
-
-// Mapa estático — imagen de Google Maps con pin rojo en la ubicación exacta
-const LeafletMap = () => (
-  <div style={{ width: "100%", height: "340px", overflow: "hidden", position: "relative" }}>
-    <img
-      src="./mapa_viedma.png"
-      alt="Mapa de ubicación — Álvaro Barros 386, Viedma"
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        objectPosition: "center top",
-        display: "block",
-      }}
-    />
-  </div>
-);
-
 export default function App() {
   const [heroRef, heroOffset] = useParallax(0.4);
   const [scrolled, setScrolled] = useState(false);
@@ -248,7 +207,7 @@ export default function App() {
       {/* NAV */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: isMobile ? "1rem 1rem" : "1rem 2.5rem",
+        padding: "1rem 2.5rem",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         background: scrolled ? "rgba(250,247,244,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
@@ -310,7 +269,7 @@ export default function App() {
           pointerEvents: "none",
         }} />
 
-        <div style={{ textAlign: "center", position: "relative", zIndex: 2, padding: isMobile ? "0 1rem" : "0 1.5rem", maxWidth: "760px" }}>
+        <div style={{ textAlign: "center", position: "relative", zIndex: 2, padding: "0 1.5rem", maxWidth: "760px" }}>
           <p style={{
             fontFamily: "'DM Sans', sans-serif", fontWeight: 300,
             fontSize: "0.75rem", letterSpacing: "0.22em",
@@ -387,17 +346,7 @@ export default function App() {
 
       {/* WHAT IS IT */}
       <section style={{ padding: "7rem 2rem", maxWidth: "1100px", margin: "0 auto" }}>
-        <RevealBlock>
-        <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-    gap: isMobile ? "3rem" : "5rem",
-    alignItems: "center",
-  }}
->
-            <div>
-              <p style={{ fontFamily: "'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1.5rem" }}>La especialidad</p>
+
               <h2 style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, lineHeight: 1.15, marginBottom: "2rem", color: "#2C1810" }}>
                 ¿Qué es la kinesiología<br /><em style={{ color: "#8B4A32" }}>pelviperineal?</em>
               </h2>
@@ -408,17 +357,64 @@ export default function App() {
                 El suelo pélvico es un conjunto de músculos y estructuras que sostiene los órganos pélvicos, participa en la continencia, la función sexual y la estabilidad postural.
               </p>
             </div>
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <style>{`
+                @keyframes floatPelvis {
+                  0%   { transform: translateY(0px) rotate(-1deg); }
+                  50%  { transform: translateY(-18px) rotate(1deg); }
+                  100% { transform: translateY(0px) rotate(-1deg); }
+                }
+                @keyframes glowPulse {
+                  0%, 100% { opacity: 0.45; transform: scale(1); }
+                  50%       { opacity: 0.7;  transform: scale(1.06); }
+                }
+              `}</style>
+
+              {/* Blob de fondo */}
               <div style={{
-                width: "100%", paddingBottom: "110%",
+                position: "absolute",
+                width: "88%", paddingBottom: "88%",
+                borderRadius: "60% 40% 55% 45% / 50% 60% 40% 55%",
                 background: "linear-gradient(135deg, #E8D5C8 0%, #D4B5A0 100%)",
-                borderRadius: "60% 40% 50% 60% / 50% 60% 40% 50%",
-                position: "relative", overflow: "hidden",
+                top: "6%", left: "6%",
+                animation: "glowPulse 5s ease-in-out infinite",
+                zIndex: 0,
+              }} />
+
+              {/* Glow difuso detrás de la imagen */}
+              <div style={{
+                position: "absolute",
+                width: "70%", height: "70%",
+                borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(196,144,106,0.35) 0%, transparent 70%)",
+                top: "15%", left: "15%",
+                filter: "blur(24px)",
+                zIndex: 1,
+              }} />
+
+              {/* Imagen flotante */}
+              <div style={{
+                position: "relative",
+                zIndex: 2,
+                width: "85%",
+                animation: "floatPelvis 6s ease-in-out infinite",
+                filter: "drop-shadow(0 20px 40px rgba(107,58,42,0.25))",
               }}>
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "6rem" }}>🦴</div>
+                <img
+                  src="/pelvis.webp"
+                  alt="Anatomía del suelo pélvico"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    display: "block",
+                    borderRadius: "12px",
+                  }}
+                />
               </div>
-              <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "80px", height: "80px", border: "1px solid rgba(107,58,42,0.25)", borderRadius: "50%" }} />
-              <div style={{ position: "absolute", bottom: "30px", left: "-30px", width: "120px", height: "120px", border: "1px solid rgba(107,58,42,0.15)", borderRadius: "50%" }} />
+
+              {/* Círculos decorativos */}
+              <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "80px", height: "80px", border: "1px solid rgba(107,58,42,0.25)", borderRadius: "50%", zIndex: 3 }} />
+              <div style={{ position: "absolute", bottom: "10px", left: "-30px", width: "120px", height: "120px", border: "1px solid rgba(107,58,42,0.15)", borderRadius: "50%", zIndex: 3 }} />
             </div>
           </div>
         </RevealBlock>
@@ -509,13 +505,7 @@ export default function App() {
         </div>
 
         {/* What we evaluate + key messages */}
-        <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-    gap: isMobile ? "2rem" : "3rem",
-    alignItems: "start",
-  }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
           <RevealBlock>
             <div style={{
               padding: "2.5rem",
@@ -581,12 +571,7 @@ export default function App() {
               </h2>
             </div>
           </RevealBlock>
-          <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-    gap: "2.5rem",
-  }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2.5rem" }}>
             <RevealBlock>
               <div style={{
                 padding: "2.5rem",
@@ -661,28 +646,14 @@ export default function App() {
         </RevealBlock>
       </section>
 
-      {/* WAVE: cream → peach before location */}
-      <div style={{ lineHeight: 0, background: "#FAF7F4", marginBottom: "-2px" }}>
-        <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
-          <polygon points="0,0 1440,60 1440,60 0,60" fill="#F2E8E0" />
-        </svg>
-      </div>
-
       {/* LOCATION */}
-      <section style={{ background: "#F2E8E0", padding: "5rem 2rem 6rem", position: "relative", overflow: "hidden" }}>
-        {/* subtle decorative blob */}
-        <div style={{
-          position: "absolute", top: "-80px", right: "-80px",
-          width: "400px", height: "400px", borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,144,106,0.1) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <section style={{ padding: isMobile ? "4rem 1.5rem 5rem" : "5rem 2rem 6rem", background: "#FAF7F4" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <RevealBlock>
-            <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
-              <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1rem" }}>Dónde encontrarme</p>
-              <h2 style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, lineHeight: 1.15, color: "#2C1810" }}>
-                Ubicación
+            <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+              <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.75rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"#9B5E42", marginBottom:"1rem" }}>Dónde encontrarnos</p>
+              <h2 style={{ fontSize:"clamp(2rem,4vw,3.2rem)", fontWeight:300, lineHeight:1.15, color:"#2C1810" }}>
+                Nuestra <em style={{ color:"#8B4A32" }}>ubicación</em>
               </h2>
             </div>
           </RevealBlock>
@@ -691,16 +662,31 @@ export default function App() {
             <div style={{
               borderRadius: "24px",
               overflow: "hidden",
-              border: "1px solid rgba(107,58,42,0.15)",
-              boxShadow: "0 8px 40px rgba(44,24,16,0.08)",
-              background: "#FAF7F4",
+              boxShadow: "0 8px 40px rgba(44,24,16,0.1)",
+              border: "1px solid rgba(107,58,42,0.1)",
+              background: "#F2E8E0",
             }}>
-              {/* Map – Leaflet renderizado en React, sin iframe ni API key */}
-              <LeafletMap />
+              {/* Map container — lazy load via loading="lazy" en el iframe */}
+              <div style={{ position: "relative", width: "100%", paddingBottom: isMobile ? "75%" : "42%", background: "#E8D5C8" }}>
+                <iframe
+                  title="Ubicación Julieta Fontana - Sanatorio Austral"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2948.7!2d-62.9983!3d-40.8135!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9610bf28b4d9e18f%3A0x400!2s%C3%81lvaro%20Barros%20386%2C%20Viedma%2C%20R%C3%ADo%20Negro!5e0!3m2!1ses!2sar!4v1"
+                  style={{
+                    position: "absolute",
+                    top: 0, left: 0,
+                    width: "100%", height: "100%",
+                    border: "none",
+                    filter: "sepia(15%) saturate(0.85) contrast(1.05)",
+                  }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
 
-              {/* Address bar */}
+              {/* Info bar debajo del mapa */}
               <div style={{
-                padding: isMobile ? "1.6rem 1.5rem" : "2rem 2.5rem",
+                padding: isMobile ? "1.5rem" : "2rem 2.5rem",
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
                 alignItems: isMobile ? "flex-start" : "center",
@@ -708,48 +694,47 @@ export default function App() {
                 gap: "1.2rem",
               }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
-                  {/* pin icon */}
-                  <div style={{
-                    width: "40px", height: "40px", flexShrink: 0,
-                    borderRadius: "50%",
-                    background: "rgba(139,74,50,0.1)",
-                    border: "1px solid rgba(139,74,50,0.2)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    marginTop: "2px",
-                  }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B4A32" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+                  {/* Pin icon SVG */}
+                  <div style={{ flexShrink: 0, marginTop: "3px" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B4A32" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Z"/>
                       <circle cx="12" cy="9" r="2.5"/>
                     </svg>
                   </div>
                   <div>
-                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:500, fontSize:"0.92rem", color:"#2C1810", marginBottom:"0.25rem", lineHeight:1.3 }}>
-                      Álvaro Barros 386, Anexo 1
+                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:500, fontSize:"0.88rem", color:"#2C1810", marginBottom:"0.25rem", letterSpacing:"0.02em" }}>
+                      Álvaro Barros 386 · Anexo 1
                     </p>
-                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.82rem", color:"#9B5E42", lineHeight:1.5, letterSpacing:"0.02em" }}>
+                    <p style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:300, fontSize:"0.82rem", color:"#7A4A35", lineHeight:1.5 }}>
                       Sanatorio Austral · Viedma, Río Negro
                     </p>
                   </div>
                 </div>
 
                 <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=Alvaro+Barros+386,+Viedma,+R%C3%ADo+Negro,+Argentina"
+                  href="https://www.google.com/maps/dir/?api=1&destination=Alvaro+Barros+386+Viedma+Rio+Negro+Argentina"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    fontFamily:"'DM Sans',sans-serif", fontWeight:500, fontSize:"0.8rem",
-                    letterSpacing:"0.1em", textTransform:"uppercase",
-                    color:"#FAF7F4", textDecoration:"none",
-                    padding:"0.75rem 1.8rem",
-                    background:"#6B3A2A",
-                    borderRadius:"100px",
-                    whiteSpace:"nowrap",
-                    transition:"all 0.3s ease",
-                    display:"inline-flex", alignItems:"center", gap:"0.5rem",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    fontFamily:"'DM Sans',sans-serif",
+                    fontWeight: 500,
+                    fontSize: "0.78rem",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "#FAF7F4",
+                    textDecoration: "none",
+                    padding: "0.75rem 1.6rem",
+                    background: "#6B3A2A",
+                    borderRadius: "100px",
+                    transition: "all 0.3s ease",
+                    whiteSpace: "nowrap",
                     flexShrink: 0,
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background="#8B4A32"; e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(107,58,42,0.3)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background="#6B3A2A"; e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#8B4A32"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(107,58,42,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#6B3A2A"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polygon points="3 11 22 2 13 21 11 13 3 11"/>
@@ -762,8 +747,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* WAVE: peach → dark before CTA */}
-      <div style={{ lineHeight: 0, background: "#F2E8E0", marginBottom: "-2px" }}>
+      {/* WAVE: cream → dark before CTA */}
+      <div style={{ lineHeight: 0, background: "#FAF7F4", marginBottom: "-2px" }}>
         <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }} preserveAspectRatio="none">
           <path d="M0,20 C300,80 600,0 900,50 C1100,85 1300,15 1440,35 L1440,80 L0,80 Z" fill="#2C1810" />
         </svg>
