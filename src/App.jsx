@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
+
 
 const useParallax = (speed = 0.3) => {
   const ref = useRef(null);
@@ -189,6 +193,169 @@ const WHAT_WE_EVALUATE = [
   "Fuerza y coordinación del suelo pélvico",
 ];
 
+
+const PelvisViewer = () => {
+  const mountRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const container = mountRef.current;
+    if (!container) return;
+
+    let animFrameId;
+    let isDragging = false;
+    let prevX = 0;
+    let autoRotY = 0;
+    let t = 0;
+
+    const w = container.clientWidth || 400;
+    const h = container.clientHeight || 400;
+
+    // Scene
+    const scene = new THREE.Scene();
+
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, w / h, 0.01, 100);
+    camera.position.set(0, 0.05, 2.4);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    container.appendChild(renderer.domElement);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0xfff5ee, 1.4));
+    const dir = new THREE.DirectionalLight(0xffeedd, 2.8);
+    dir.position.set(2, 3, 3);
+    scene.add(dir);
+    const fill = new THREE.DirectionalLight(0xd4b5a0, 1.0);
+    fill.position.set(-2, 1, -1);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffeedd, 0.6);
+    rim.position.set(0, -2, -2);
+    scene.add(rim);
+
+    // Load GLTF
+    const loader = new GLTFLoader();
+    loader.load(
+      '/pelvic_model/2025-female-pelvic-floor-muscles.gltf',
+      (gltf) => {
+        const model = gltf.scene;
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 1.7 / maxDim;
+        model.scale.setScalar(scale);
+        model.position.sub(center.multiplyScalar(scale));
+        model.position.y -= 0.05;
+        scene.add(model);
+        setLoading(false);
+      },
+      undefined,
+      (err) => {
+        console.error('GLTF load error:', err);
+        setError(true);
+        setLoading(false);
+      }
+    );
+
+    // Interaction
+    const onMouseDown = (e) => { isDragging = true; prevX = e.clientX; };
+    const onMouseMove = (e) => { if (isDragging) { autoRotY += (e.clientX - prevX) * 0.008; prevX = e.clientX; } };
+    const onMouseUp = () => { isDragging = false; };
+    const onTouchStart = (e) => { isDragging = true; prevX = e.touches[0].clientX; };
+    const onTouchMove = (e) => { if (isDragging) { autoRotY += (e.touches[0].clientX - prevX) * 0.008; prevX = e.touches[0].clientX; } };
+
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    renderer.domElement.addEventListener('touchstart', onTouchStart);
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onMouseUp);
+
+    // Animate
+    const animate = () => {
+      animFrameId = requestAnimationFrame(animate);
+      t += 0.008;
+      if (!isDragging) autoRotY += 0.004;
+      scene.rotation.y = autoRotY;
+      scene.position.y = Math.sin(t) * 0.03;
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Resize
+    const onResize = () => {
+      const nw = container.clientWidth;
+      const nh = container.clientHeight;
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh);
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelAnimationFrame(animFrameId);
+      renderer.domElement.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      renderer.domElement.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onMouseUp);
+      window.removeEventListener('resize', onResize);
+      renderer.dispose();
+      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return (
+    <div style={{ position: "relative", width: "100%", paddingBottom: "100%" }}>
+      <div ref={mountRef} style={{
+        position: "absolute", inset: 0,
+        borderRadius: "50%", overflow: "hidden",
+        cursor: "grab",
+        background: "linear-gradient(135deg, #F2E8E0 0%, #E8D5C8 100%)",
+      }} />
+
+      {loading && !error && (
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(135deg, #E8D5C8, #D4B5A0)",
+          borderRadius: "50%",
+        }}>
+          <div style={{ width: "36px", height: "36px", border: "3px solid rgba(107,58,42,0.2)", borderTop: "3px solid #8B4A32", borderRadius: "50%", animation: "spin3d 1s linear infinite", marginBottom: "0.5rem" }} />
+          <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "0.72rem", color: "#6B3A2A", fontWeight: 300 }}>Cargando modelo 3D...</p>
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "linear-gradient(135deg, #E8D5C8, #D4B5A0)",
+          borderRadius: "50%",
+        }}>
+          <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: "0.8rem", color: "#6B3A2A", textAlign: "center", padding: "1.5rem" }}>
+            No se pudo cargar el modelo
+          </p>
+        </div>
+      )}
+
+      <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "80px", height: "80px", border: "1px solid rgba(107,58,42,0.25)", borderRadius: "50%", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "10px", left: "-30px", width: "120px", height: "120px", border: "1px solid rgba(107,58,42,0.15)", borderRadius: "50%", pointerEvents: "none" }} />
+      <style>{"@keyframes spin3d { to { transform: rotate(360deg); } }"}</style>
+    </div>
+  );
+};
+
+
 export default function App() {
   const [heroRef, heroOffset] = useParallax(0.4);
   const [scrolled, setScrolled] = useState(false);
@@ -360,65 +527,7 @@ export default function App() {
                 El suelo pélvico es un conjunto de músculos y estructuras que sostiene los órganos pélvicos, participa en la continencia, la función sexual y la estabilidad postural.
               </p>
             </div>
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <style>{`
-                @keyframes floatPelvis {
-                  0%   { transform: translateY(0px) rotate(-1deg); }
-                  50%  { transform: translateY(-18px) rotate(1deg); }
-                  100% { transform: translateY(0px) rotate(-1deg); }
-                }
-                @keyframes glowPulse {
-                  0%, 100% { opacity: 0.45; transform: scale(1); }
-                  50%       { opacity: 0.7;  transform: scale(1.06); }
-                }
-              `}</style>
-
-              {/* Blob de fondo */}
-              <div style={{
-                position: "absolute",
-                width: "88%", paddingBottom: "88%",
-                borderRadius: "60% 40% 55% 45% / 50% 60% 40% 55%",
-                background: "linear-gradient(135deg, #E8D5C8 0%, #D4B5A0 100%)",
-                top: "6%", left: "6%",
-                animation: "glowPulse 5s ease-in-out infinite",
-                zIndex: 0,
-              }} />
-
-              {/* Glow difuso detrás de la imagen */}
-              <div style={{
-                position: "absolute",
-                width: "70%", height: "70%",
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(196,144,106,0.35) 0%, transparent 70%)",
-                top: "15%", left: "15%",
-                filter: "blur(24px)",
-                zIndex: 1,
-              }} />
-
-              {/* Imagen flotante */}
-              <div style={{
-                position: "relative",
-                zIndex: 2,
-                width: "85%",
-                animation: "floatPelvis 6s ease-in-out infinite",
-                filter: "drop-shadow(0 20px 40px rgba(107,58,42,0.25))",
-              }}>
-                <img
-                  src="/pelvis.webp"
-                  alt="Anatomía del suelo pélvico"
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                    borderRadius: "12px",
-                  }}
-                />
-              </div>
-
-              {/* Círculos decorativos */}
-              <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "80px", height: "80px", border: "1px solid rgba(107,58,42,0.25)", borderRadius: "50%", zIndex: 3 }} />
-              <div style={{ position: "absolute", bottom: "10px", left: "-30px", width: "120px", height: "120px", border: "1px solid rgba(107,58,42,0.15)", borderRadius: "50%", zIndex: 3 }} />
-            </div>
+            <PelvisViewer />
           </div>
         </RevealBlock>
       </section>
